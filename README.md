@@ -149,6 +149,61 @@ refresh_token: YOUR_REFRESH_TOKEN
 
 ---
 
+---
+
+## 🏗 ARCHITECTURE
+
+```
+~/.claude/
+├── bin/                    ← All executable scripts
+├── skills/                 ← SKILL.md files for Claude
+├── agents/                 ← Agent definition files
+├── tcc-logs/               ← Task execution logs
+│   └── YYYY-MM-DD/         ← Daily log directories
+└── tier0.env               ← API keys for all Tier 0 models
+```
+
+**Dependencies:** Python 3.11+ · Bash · GitHub CLI (`gh`) · Ollama (local models)
+
+---
+
+## ❓ FAQ
+
+**Q: Do I need all API keys?**
+A: No. Each Tier 0 model is optional. Ollama (free local) works standalone.
+
+**Q: Will this work on Linux/Windows?**
+A: Bash scripts → Linux ✓. Windows needs WSL2. All Python scripts cross-platform.
+
+**Q: How much does it cost to run?**
+A: Groq + Gemini free tiers cover 90% of tasks. DeepSeek/GPT-4o-mini ~$1-5/month heavy use.
+
+**Q: Can I add my own models?**
+A: Yes — add to `tier0.env` + update model list in `tier0-blast`.
+
+---
+
+## 📋 CHANGELOG
+
+| Version | Date | Changes |
+|---|---|---|
+| v1.2 | 2026-05-15 | Added ollama watchdog, hermes integration, daily sync |
+| v1.1 | 2026-05-12 | MAE engine, TCC queue, Tier 0 router |
+| v1.0 | 2026-05-10 | Initial release — core scripts + skills |
+
+---
+
+## 🔗 RELATED REPOS
+
+| Repo | Relation |
+|---|---|
+| [mae-master-automation-engine](https://github.com/hmzainjamil/mae-master-automation-engine) | Orchestrates this system |
+| [tcc-task-command-center](https://github.com/hmzainjamil/tcc-task-command-center) | Task queue for parallel execution |
+| [tier0-llm-router](https://github.com/hmzainjamil/tier0-llm-router) | LLM routing layer |
+| [hermes-ai-system](https://github.com/hmzainjamil/hermes-ai-system) | Local model orchestration |
+| [claude-ai-system](https://github.com/hmzainjamil/claude-ai-system) | Master backup repo |
+
+
 <div align="center">
 Built by <a href="https://github.com/hmzainjamil">HMZ</a> · <a href="https://digiminds.org">DigiMinds</a> · Zero-manual PPC reporting
 </div>
