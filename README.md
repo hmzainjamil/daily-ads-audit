@@ -1,5 +1,9 @@
 # daily-ads-audit
 
+<!-- HMZ PORTFOLIO STANDARD -->
+> Portfolio status: active · Visibility: public · Source of truth: current repository source.
+<!-- END HMZ PORTFOLIO STANDARD -->
+
 > **Daily Ads Audit** — Automated Google/Meta audit pipeline: performance alerts, budget anomaly detection, and daily branded PDF reports.
 
 <p align="center">
