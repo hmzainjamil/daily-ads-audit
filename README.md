@@ -1,154 +1,56 @@
-# daily-ads-audit
+# Daily Ads Audit
 
-> **Daily Ads Audit** — Automated Google/Meta audit pipeline: performance alerts, budget anomaly detection, and daily branded PDF reports.
+A Python script that requests Google Ads and GA4 data through Windsor.ai, applies fixed heuristic checks, and writes XLSX, PDF, and HTML reports. It does not change campaigns or create a connected Google/Meta platform integration.
 
-<p align="center"><a href="https://github.com/hmzainjamil/daily-ads-audit">Repository</a> · <a href="https://github.com/hmzainjamil/daily-ads-audit/commits/main">Commits</a> · <a href="https://github.com/hmzainjamil/daily-ads-audit/issues">Issues</a></p>
-<p align="center"><img alt="Documentation" src="https://img.shields.io/badge/documentation-deep%20editorial-lightgrey"> <img alt="Lifecycle" src="https://img.shields.io/badge/lifecycle-active-success"></p>
-
-<!-- HMZ DEEP README v1 -->
-
-## At a glance
-
-| Field | Current state |
+| Status | Evidence |
 |---|---|
-| Repository | daily-ads-audit |
-| Visibility | Public |
-| Lifecycle | Active |
-| Evidence basis | Current repository documentation and source-visible material |
+| Source reviewed | 2026-10-02; one Python script and one shell wake-check |
+| Data connector | Windsor.ai HTTP endpoint, configured in source |
+| Tests and evaluation | No test suite or reproducible evaluation included |
+| Dependencies | Imported libraries listed below; no pinned dependency manifest |
+| License | No license file or declared license identified |
 
-## Why this exists
+## Scope
 
-**Daily Ads Audit** — Automated Google/Meta audit pipeline: performance alerts, budget anomaly detection, and daily branded PDF reports.
+The script iterates over client profiles defined inside `daily-ads-audit.py`. It requests Google Ads and GA4 data for a rolling date window, calculates account and campaign summaries, applies hard-coded thresholds and recommendations, then writes reports beneath `~/Downloads/<client>/<date>/<time>/`. The data and recommendations have not been independently validated.
 
-The README is organized around the repository's documented scope. It separates implementation evidence from claims about performance, marketing outcomes, or external platform behavior.
+The included profiles contain client and account identifiers, industry-specific assumptions, and other operational details. This public repository should not be used with live customer data until the maintainer reviews and removes or replaces those values. See [SECURITY.md](SECURITY.md).
 
-## 🧠 CONCEPTS
+The script only reads ad/analytics data and generates files in the inspected code. Recommendations such as pausing campaigns are text; the script does not call a campaign mutation API.
 
-| Feature | Location | Description |
-|---|---|---|
-| CoreEngine | `core/engine.py` | Primary execution logic and orchestration layer |
-| ConfigManager | `config/manager.py` | Environment validation, hot-reload, API key checks |
-| ProviderAdapters | `adapters/` | Per-provider API wrappers with auth + retry logic |
-| TierRouter | `routing/tier0.py` | Ollama→DeepSeek→Gemini→Groq→GPT cost ladder |
-| OutputFormatter | `output/formatter.py` | Caveman-compressed, signal-dense output pipeline |
-| LogManager | `logs/manager.py` | Structured JSON logging to ~/.claude/tcc-logs/ |
-| HookHandler | `hooks/handler.py` | SessionStart/Stop integration for Claude Code |
-| RetryLogic | `core/retry.py` | Exponential backoff + alt-provider on persistent failure |
-| StatusTracker | `core/status.py` | Per-operation metrics: latency, cost, confidence scores |
-| Scheduler | `schedule/scheduler.py` | LaunchAgent-based cron scheduling for automation |
+## Current files
 
-## ⚙️ HOW IT WORKS
+- `daily-ads-audit.py`: data pull, calculations, heuristic issue detection, and XLSX/PDF/HTML generation.
+- `ads-audit-wake-check.sh`: after 17:00 local time, checks a date sentinel and backgrounds a machine-specific installed script path; it writes a log and sentinel beneath `~/.claude/logs`.
 
-```
-Input / Trigger (CLI command or hook event)
-    │
-    ▼
-ConfigManager: load .env, validate all provider API keys
-    │
-    ▼
-TierRouter: Ollama → DeepSeek → Gemini → Groq → GPT
-    │        (cost-ordered; local-first enforced always)
-    ▼
-CoreEngine: primary processing with selected provider adapter
-    │
-    ├── ProviderAdapter: API call with rate-limit handling
-    ├── RetryLogic: exponential backoff + alt provider on failure
-    ├── StatusTracker: record latency, cost, confidence score
-    │
-    ▼
-OutputFormatter: caveman-compress result to signal-dense format
-    │
-    ▼
-LogManager: persist full run record to ~/.claude/tcc-logs/
-    │
-    ▼
-stdout / file output / hook callback response
+## Setup and run
+
+No install guide, dependency lock, configuration file, or client-profile schema is included. Source imports `requests`, `openpyxl`, and `reportlab`; install versions in an isolated environment only after maintainer review. Set `WINDSOR_API_KEY` in the environment. The code currently has three profiles embedded in source, so do not run it against production or third-party accounts before reviewing and replacing them.
+
+After installing those dependencies and preparing an approved configuration, the source entry point is:
+
+```sh
+python3 daily-ads-audit.py
 ```
 
-## 🚀 INSTALL
+This command has not been executed in this review. It makes network requests and writes reports under Downloads for every configured profile. The shell wake-check is not a portable scheduler setup; its installed path and log locations are machine-specific.
 
-```bash
-git clone https://github.com/hmzainjamil/daily-ads-audit
-cd daily-ads-audit
-pip install -r requirements.txt
-cp .env.example .env
-# Fill in: GROQ_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY
-# Optional: OPENAI_API_KEY, ANTHROPIC_API_KEY (fallback only)
-python setup.py verify    # confirms all provider connections live
-python setup.py hooks     # installs Claude Code SessionStart/Stop hooks
-mkdir -p ~/.claude/tcc-logs/  # create log directory
-```
+## Data and report behavior
 
-## 📟 USAGE
+Requests go to the Windsor.ai connector endpoint with account IDs, requested fields, and date ranges in query parameters. The script writes campaign names, measurements, summaries, and recommendations to spreadsheet, PDF, and HTML files. Treat the output as confidential customer data. No retention, access-control, deletion, or sharing policy is defined here.
 
-```bash
-# Primary usage — single command fires full pipeline
-python main.py "your goal or task description here"
+The analysis uses fixed thresholds in source, including CTR, CPA, CPC, ROAS, bounce-rate, and session-duration checks, plus profile-specific assumptions. These are code defaults, not validated industry benchmarks or professional advice. Verify formulas, attribution windows, conversion definitions, and thresholds against each account before relying on the output.
 
-# Specify provider explicitly (skip auto-routing)
-python main.py --provider groq "summarize this document quickly"
+## Documentation
 
-# Output to file (default: stdout)
-python main.py "task description" --output ~/Downloads/result.md
-
-# Dry run — show routing plan without making any API calls
-python main.py --dry-run "test task to check routing"
-
-# Verbose mode — shows provider selection, scores, latency
-python main.py --verbose "research task with full debug output"
-
-# Batch mode — process multiple inputs from file
-python main.py --batch inputs.txt --output ~/Downloads/results/
-
-# Status and health verification
-python main.py status      # show all configured providers + health
-python main.py verify      # test live connections to all providers
-```
-
-## ⚙️ CONFIGURATION
-
-| Variable | Default | Description |
-|---|---|---|
-| `GROQ_API_KEY` | — | Groq Cloud API key (primary fast text provider) |
-| `GEMINI_API_KEY` | — | Google AI Studio key (long-context and multimodal) |
-| `DEEPSEEK_API_KEY` | — | DeepSeek API key (code specialist tasks) |
-| `OPENAI_API_KEY` | — | OpenAI (Tier 1 fallback; used after Tier 0 exhausted) |
-| `ANTHROPIC_API_KEY` | — | Claude (final resort; only on explicit user request) |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Local Ollama endpoint (checked first always) |
-| `LOG_DIR` | `~/.claude/tcc-logs/` | Output log directory for all run records |
-| `TIMEOUT_S` | `30` | Per-operation timeout in seconds per provider |
-| `RETRY_COUNT` | `2` | Number of retry attempts before marking failed |
-| `CONFIDENCE_THRESHOLD` | `0.6` | Minimum confidence score to accept output (0.0-1.0) |
-| `COMPRESS_OUTPUT` | `true` | Apply caveman-compression to all outputs |
-| `LOG_LEVEL` | `INFO` | Logging verbosity: DEBUG / INFO / WARN / ERROR |
-| `LOCAL_FIRST` | `true` | Always try Ollama before any paid API call |
-| `AUTO_RETRY_ALT` | `true` | Automatically switch provider on persistent failure |
-| `OUTPUT_DIR` | `~/Downloads` | Default directory for all generated file outputs |
-
-## Validation and evidence
-
-No dedicated test or evaluation section was available in the current README.
-
-## 🔐 SECURITY CONSIDERATIONS
+- [Security and data handling](SECURITY.md)
 
 ## Limitations
 
-- Paid-media platform APIs, attribution behavior, and account data are external dependencies.
-- Quantitative claims require reproducible evidence.
-- Planned automation is not treated as completed functionality.
-
-## 📚 RELATED REPOS IN THE HMZ AI SYSTEM
-
-| Repo | Role | Dependency |
-|---|---|---|
-| [G0DM0D3](https://github.com/hmzainjamil/G0DM0D3) | Multi-model racing + Liquid Response | Uses tier0-llm-router |
-| [mae-master-automation-engine](https://github.com/hmzainjamil/mae-master-automation-engine) | Goal decomposition + specialist swarm | Uses tcc, tier0 |
-| [tcc-task-command-center](https://github.com/hmzainjamil/tcc-task-command-center) | Parallel blast + queue + dashboard | Used by mae |
-| [tier0-llm-router](https://github.com/hmzainjamil/tier0-llm-router) | Cost-optimized routing ladder | Used by all |
-| [hermes-ai-system](https://github.com/hmzainjamil/hermes-ai-system) | Persistent agent + 80+ skills | Uses tier0, mcp |
-| [claude-ai-system-backup](https://github.com/hmzainjamil/claude-ai-system-backup) | System backup + restore | Backs up all |
-
-<div align="center">Built by <a href="https://github.com/hmzainjamil">HMZ</a> · Part of the <a href="https://github.com/hmzainjamil/claude-ai-system">HMZ Claude AI System</a> · Zero broken workflows</div>
+- No automated schedule installation, alert delivery, dashboard hosting, or ad changes are implemented in the tracked files.
+- The wake-check assumes an existing script at `/Users/mc/.claude/bin/daily-ads-audit.py`; it is not wired to a fresh checkout.
+- The current script uses hard-coded account profiles and includes sensitive operational identifiers.
+- There is no test suite, pinned dependency manifest, release process, or support policy in the tracked tree.
 
 ## Maintainer
 
