@@ -17,7 +17,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 # ─── CONFIG ─────────────────────────────────────────────────────────────────
-WINDSOR_API_KEY = os.environ.get("WINDSOR_API_KEY", "YOUR_WINDSOR_API_KEY_HERE")
+WINDSOR_API_KEY = os.environ.get("WINDSOR_API_KEY", "")
 WINDSOR_BASE    = "https://connectors.windsor.ai/all"
 DOWNLOADS       = Path.home() / "Downloads"
 
@@ -26,17 +26,17 @@ CLIENTS = {
         "full_name": "Orthopedic Surgery Practice",
         "color":     "#1a4f8a",
         "accent":    "#e8f0fb",
-        "gads_accounts": ["106-254-8978"],
-        "ga4_accounts":  ["258012138", "439336281"],
-        "ga4_names":     {"258012138": "cityorthosports.com", "439336281": "newjerseykneesurgeon"},
+        "gads_accounts": ["[REDACTED]"],
+        "ga4_accounts":  ["[REDACTED]", "[REDACTED]"],
+        "ga4_names":     {"[REDACTED]": "[REDACTED]", "[REDACTED]": "[REDACTED]"},
     },
     "HeatWeave": {
         "full_name": "HeatWeave HVAC",
         "color":     "#c0392b",
         "accent":    "#fdf2f1",
-        "gads_accounts": ["494-668-8111"],
-        "ga4_accounts":  ["375400573"],
-        "ga4_names":     {"375400573": "Heatwave Florida"},
+        "gads_accounts": ["[REDACTED]"],
+        "ga4_accounts":  ["[REDACTED]"],
+        "ga4_names":     {"[REDACTED]": "[REDACTED]"},
     },
     "Tack": {
         "full_name": "Tack Media",
@@ -212,8 +212,8 @@ def analyze_gads(rows):
         issues.append({
             "priority": "HIGH",
             "issue": "No call conversions tracked",
-            "detail": "Phone calls (201-500-9450 / 201-613-3388) not appearing as conversions — tracking gap",
-            "fix": "Verify Google Ads call extension + call conversion tag in GTM-K96NFSF, check call tracking in GA4"
+            "detail": "Phone calls ([REDACTED] / [REDACTED]) not appearing as conversions — tracking gap",
+            "fix": "Verify Google Ads call extension + call conversion tag in [REDACTED], check call tracking in GA4"
         })
 
     if avg_roas > 0 and avg_roas < 2:
